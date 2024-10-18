@@ -1,0 +1,59 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Defina o generator para gerar o cliente Prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String
+  price       Float
+  description String
+  image       String?
+  brandId     Int?        @map("brandId")
+  brand       Brand?      @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  categories  ProductCategory[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Brand {
+  id         Int        @id @default(autoincrement())
+  name       String
+  products   Product[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@map("Brand")
+}
+
+model Category {
+  id          Int         @id @default(autoincrement())
+  name        String
+  products    ProductCategory[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model ProductCategory {
+  product_id  Int
+  category_id Int
+
+  product   Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  category  Category @relation(fields: [category_id], references: [id])
+
+  @@id([product_id, category_id])
+  @@map("ProductCategory")
+}
